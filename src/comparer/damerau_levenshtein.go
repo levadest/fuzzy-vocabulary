@@ -20,7 +20,7 @@ func DamerauLevenshtein(source string, targetWords []string) (result int) {
 		var iterationResult int
 
 		targetWordRuneSlice := []rune(targetWord)
-		inf := len(sourceWordRuneSlice) + len(targetWordRuneSlice)
+		bothWordsLength := len(sourceWordRuneSlice) + len(targetWordRuneSlice)
 
 		if len(sourceWordRuneSlice) == 0 {
 			iterationResult = len(targetWordRuneSlice)
@@ -98,7 +98,7 @@ func DamerauLevenshtein(source string, targetWords []string) (result int) {
 						}
 						swapDist = i + j + preSwapCost - iSwap - jSwap - 1
 					} else {
-						swapDist = inf
+						swapDist = bothWordsLength
 					}
 					baseMatrixArray[i][j] = min(min(min(deleteDist, insertDist), matchDist), swapDist)
 				}

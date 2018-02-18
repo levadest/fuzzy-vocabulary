@@ -1,9 +1,10 @@
 package main
 
 import (
-	"comparer"
 	"strings"
 	"sync"
+
+	"comparer"
 )
 
 type WorkerService struct {
@@ -20,7 +21,7 @@ type Job struct {
 	calculateDistance func(string string) int
 }
 
-func NewJob(s string, f func(str string) int) *Job {
+func InitJob(s string, f func(str string) int) *Job {
 	return &Job{fuzzyWord: s, calculateDistance: f}
 }
 
@@ -32,7 +33,7 @@ func InitWorkerService(tasks []*Job, concurrency int) *WorkerService {
 	}
 }
 
-func (p *WorkerService) RunWorkerService() {
+func (p *WorkerService) runWorkerService() {
 
 	p.wg.Add(len(p.Tasks))
 	for i := 0; i < p.concurrency; i++ {
@@ -52,7 +53,7 @@ func (p *WorkerService) payload() {
 	}
 }
 
-func (p *WorkerService) CalculateTotalFuzziness() (result int) {
+func (p *WorkerService) calculateTotalFuzziness() (result int) {
 	for _, task := range p.Tasks {
 		result += task.ResultDimension
 	}
@@ -64,10 +65,10 @@ func (t *Job) Run(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func FillWorkersWithFuzzyWords() (tasks []*Job) {
+func fillWorkersWithFuzzyWords() (tasks []*Job) {
 
-	for _, inputWord := range inputWords {
-		tasks = append(tasks, NewJob(inputWord, func(str string) int {
+	for _, inputWord := range inputSourceWords {
+		tasks = append(tasks, InitJob(inputWord, func(str string) int {
 			return comparer.DamerauLevenshtein(strings.ToLower(str), vocabularyWords)
 		}))
 	}

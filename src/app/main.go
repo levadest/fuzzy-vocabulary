@@ -5,52 +5,51 @@ import (
 	"fmt"
 	"io/ioutil"
 	_ "net/http/pprof"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
-	"path/filepath"
 
 	"model"
-
 )
 
 const (
-	dictionaryPath          = "src/comparer/vocabulary.txt"
+	dictionaryPath          = "src/model/vocabulary.txt"
 	vocabularyWordDelimiter = "\n"
 )
 
 var (
-	inputFile        string
+	inputSourceFile  string
 	inputConcurrency int
-	inputWords       []string
+	inputSourceWords []string
 	vocabularyWords  []string
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.IntVar(&inputConcurrency, "concurrency", 500, model.FLAG_CONCURRENCY)
-	flag.StringVar(&inputFile, "filepath", "", model.FLAG_FILENAME)
+	flag.StringVar(&inputSourceFile, "filepath", "", model.FLAG_FILENAME)
 	flag.Parse()
 
-	if inputFile == "" {
+	if inputSourceFile == "" {
 		panic(model.ERROR_NO_INPUT_FILE)
 	}
 
-	pwd, err := filepath.Abs(dictionaryPath)
+	dictionaryFilePath, err := filepath.Abs(dictionaryPath)
 	if err != nil {
-		panic(fmt.Sprintf(model.ERROR_CANT_READ_FILEPATH,err.Error()))
+		panic(fmt.Sprintf(model.ERROR_CANT_READ_FILEPATH, err.Error()))
 	}
-	vocabularyFile, err := ioutil.ReadFile(pwd)
+	vocabularyFile, err := ioutil.ReadFile(dictionaryFilePath)
 	if err != nil {
 		panic(err.Error())
 	}
 	vocabularyWords = strings.Split(strings.ToLower(string(vocabularyFile)), vocabularyWordDelimiter)
 
-	sourceFuzzyWordsFile, err := ioutil.ReadFile(inputFile)
+	sourceFuzzyWordsFile, err := ioutil.ReadFile(inputSourceFile)
 	if err != nil {
 		panic(fmt.Sprintf("%s: %s", model.ERROR_CANT_READ_FILE, err.Error()))
 	}
-	inputWords = strings.Fields(string(sourceFuzzyWordsFile))
+	inputSourceWords = strings.Fields(string(sourceFuzzyWordsFile))
 
 }
 
@@ -60,10 +59,10 @@ func main() {
 
 	timeNow := time.Now()
 
-	tasks := FillWorkersWithFuzzyWords()
+	tasks := fillWorkersWithFuzzyWords()
 	p := InitWorkerService(tasks, inputConcurrency)
-	p.RunWorkerService()
+	p.runWorkerService()
 
-	fmt.Printf(model.MESSAGE_WORK, time.Since(timeNow), p.CalculateTotalFuzziness())
+	fmt.Printf(model.MESSAGE_WORK, time.Since(timeNow), p.calculateTotalFuzziness())
 
 }
